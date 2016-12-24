@@ -56,16 +56,6 @@ def getnounandadj(file_path):
         initindex+=1
     return noun,adj,arrwithna,index
     
-def getfeature(file_path):
-    file_object = codecs.open(file_path,'r','utf-8')
-    featurearr = []
-    try:
-        all_text = file_object.read()
-        arr = all_text.split()
-    finally:
-        file_object.close()
-    return arr
-    
 def create_txt(file_path, noun, adj):
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -147,15 +137,19 @@ def extractopinion():
             arr = reviewstr[i].split()
             indices = [j for j, s in enumerate(arr) if w in s]
             for j in indices:
-                temp = j
+                temp = j-1
                 while temp >= 0:
+                    if arr[temp] in effadj:
+                        break
                     if arr[temp] in adj[i]:
                         effadj.add(arr[temp])
                         opinion.add(arr[temp])
                         break
                     temp-=1
-                temp = j
+                temp = j+1
                 while temp<len(indices):
+                    if arr[temp] in effadj:
+                        break
                     if arr[temp] in adj[i]:
                         effadj.add(arr[temp])
                         opinion.add(arr[temp])
@@ -180,20 +174,8 @@ def extractopinion():
                             # effadj.add(word)
                             # opinion.add(word)
             feature[w].append(list(effadj))
+    create_txt1("F:/course/sentimentcode/feature/data/opinion", opinion)
     writedictojson("F:/course/sentimentcode/feature/data/featuredic", feature) 
-    
-def featureshandle():
-    featurearr = getfeature("F:/course/sentimentcode/feature/data/features")
-    newfeature = []
-    for feature in featurearr:
-        arr = []
-        arr.append(feature)
-        taglist = nltk.pos_tag(arr)
-        print(taglist)
-        for tag in taglist:
-            if tag[1]=='NN':
-                newfeature.append(tag[0])
-    create_txt1("F:/course/sentimentcode/feature/data/newfeatures", newfeature)
     
 # featureshandle()
 feature = extractopinion()

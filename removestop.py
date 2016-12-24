@@ -30,6 +30,8 @@ def remove_stop():
         for word in arr:
             if word.lower() in stopwords:
                 continue
+            if 'www' in word.lower():
+                continue
             newline.append(word.lower())
         content.append(newline)
     create_txt("F:/course/sentimentcode/feature/data/corpuswithoutstop",content)
