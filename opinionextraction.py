@@ -98,11 +98,22 @@ def create_txt1(file_path, content):
 import json    
 def writedictojson(file_path, dic):
     json.dump(dic, codecs.open(file_path,'w','utf-8'))
-     
+
+def getfeature(file_path):
+    file_object = codecs.open(file_path,'r','utf-8')
+    featurearr = []
+    try:
+        all_text = file_object.read()
+        arr = all_text.split()
+    finally:
+        file_object.close()
+    return arr
+    
 def extractopinion():
     (noun, adj,arrwithna,index) = getnounandadj("F:/course/sentimentcode/feature/data/corpuswithoutstop")#handle file make it leave only noun and adj
     create_txt("F:/course/sentimentcode/feature/data/nounadj",noun,adj)
     featurearr = getfeature("F:/course/sentimentcode/feature/data/newfeatures")
+    
     l = len(noun)
     feature = dict()
     opinion = set()
@@ -119,36 +130,48 @@ def extractopinion():
         nounlen = len(noun[i])
         if nounlen == 1:#just one feature in a review,let all the adj in the review as opinions
             w = noun[i][0]
+            effadj = set()
+            dic = dict()
             if not w in featurearr:
                 continue
             for a in adj[i]:
                 opinion.add(a)
+                effadj.add(a)
             if not w in feature:
-                feature[w]=[] 
-            feature[w].append(adj[i])
+                feature[w]=[]
+            dic[index[i]] = list(effadj)
+            feature[w].append(dic)
             continue
         for w in noun[i]:#many features in a review,every feature get its adj near it
             if not w in featurearr:
                 continue
             if not w in feature:
                 feature[w]=[]
-            feature[w].append(index[i])
+            dic = dict()
             effadj = set()
             arr = reviewstr[i].split()
             indices = [j for j, s in enumerate(arr) if w in s]
             for j in indices:
                 temp = j-1
+                find = False
                 while temp >= 0:
                     if arr[temp] in effadj:
+                        break
+                    if arr[temp] in noun[i]:#in other noun range
                         break
                     if arr[temp] in adj[i]:
                         effadj.add(arr[temp])
                         opinion.add(arr[temp])
+                        find = True
                         break
                     temp-=1
+                if find:
+                    continue
                 temp = j+1
                 while temp<len(indices):
                     if arr[temp] in effadj:
+                        break
+                    if arr[temp] in noun[i]:
                         break
                     if arr[temp] in adj[i]:
                         effadj.add(arr[temp])
@@ -173,7 +196,8 @@ def extractopinion():
                         # if word in adj[i]:
                             # effadj.add(word)
                             # opinion.add(word)
-            feature[w].append(list(effadj))
+            dic[index[i]] = list(effadj)
+            feature[w].append(dic)
     create_txt1("F:/course/sentimentcode/feature/data/opinion", opinion)
     writedictojson("F:/course/sentimentcode/feature/data/featuredic", feature) 
     
